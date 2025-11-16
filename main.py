@@ -13,10 +13,15 @@ from typing import Union
 
 def spare_matrix_Abt(m: int, n: int) -> Union[Tuple[np.ndarray, np.ndarray] , None]:
     
-    t = np.linspace(0,1,m)
+    if not (isinstance(m, int) and isinstance(n, int)):
+        return None
+    if m <=0 or n <=0:
+        return None
+    
+    t = np.linspace(0,1,m, endpoint = True)
     A = np.vander(t,n,increasing = True)
-    b = [np.cos(4*v) for v in t]
-    return A, b
+    b = np.cos(4 * t)
+    return A,b
     """Funkcja tworząca zestaw składający się z macierzy A (m,n) i
     wektora b (m,) na podstawie pomocniczego wektora t (m,).
 
@@ -36,8 +41,13 @@ def spare_matrix_Abt(m: int, n: int) -> Union[Tuple[np.ndarray, np.ndarray] , No
 def square_from_rectan(
     A: np.ndarray, b: np.ndarray
 ) -> Union[Tuple[np.ndarray, np.ndarray] , None]:
-    
-    return A.T@A, A.T@b
+    if not (isinstance(A, np.ndarray) and isinstance(b, np.ndarray)):
+        return None
+    if A.shape[0] != b.shape[0]:
+        return None
+    ATA = A.T @ A
+    ATb = A.T @ b
+    return ATA, ATb 
     """Funkcja przekształcająca układ równań z prostokątną macierzą współczynników
     na kwadratowy układ równań.
     A^T * A * x = A^T * b  ->  A_new * x = b_new
@@ -56,6 +66,14 @@ def square_from_rectan(
 
 
 def residual_norm(A: np.ndarray, x: np.ndarray, b: np.ndarray) -> Union[float, None]:
+
+    if not (isinstance(A, np.ndarray) and isinstance(x, np.ndarray) and isinstance(b, np.ndarray)):
+        return None
+    if (A.shape)[1] != x.shape[0]:
+        return None
+    
+    return np.linalg.norm(b - (A @ x))
+
     """Funkcja obliczająca normę residuum dla równania postaci:
     Ax = b
 
@@ -69,3 +87,8 @@ def residual_norm(A: np.ndarray, x: np.ndarray, b: np.ndarray) -> Union[float, N
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
     """
     pass
+def svd_solve(A, b):
+    U, S, VT = np.linalg.svd(A, full_matrices=False)
+    S = np.diag(S)
+    V = VT.T
+    return V @ np.linalg.solve(S, U.T @ b)
